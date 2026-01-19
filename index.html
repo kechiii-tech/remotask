@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Remote Jobs Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<style>
+/* ===== RESET ===== */
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Roboto, sans-serif; }
+
+/* ===== BODY ===== */
+body { background: linear-gradient(to right, #e0f7fa, #f4f6f8); padding:15px; color:#333; }
+
+/* ===== HEADER ===== */
+h1 { text-align:center; color:#2d5bff; font-size:28px; margin-bottom:5px; }
+p { text-align:center; color:#555; font-size:14px; margin-bottom:20px; }
+
+/* ===== JOB GRID ===== */
+.jobs { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:15px; }
+
+/* ===== JOB CARD ===== */
+.job {
+  background:white; padding:15px; border-radius:15px; box-shadow:0 6px 15px rgba(0,0,0,0.1);
+  cursor:pointer; transition:transform 0.2s ease, box-shadow 0.2s ease; position:relative;
+}
+.job:hover { transform:translateY(-5px); box-shadow:0 10px 20px rgba(0,0,0,0.15); }
+
+.job span { display:block; font-size:12px; font-weight:600; margin-top:8px; }
+
+/* ===== BADGES ===== */
+.badge { display:inline-block; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:600; color:white; margin-top:5px; }
+.low { background-color:#4CAF50; }      /* Green = Easy / Low Pay */
+.high { background-color:#2196F3; }     /* Blue = Hard / High Pay */
+
+/* ===== ICONS ===== */
+.job span::before { content:"💼 "; margin-right:3px; }
+
+/* ===== MODAL ===== */
+.modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); align-items:center; justify-content:center; z-index:100; }
+.modal-content { background:#fff; padding:25px; width:90%; max-width:350px; border-radius:20px; text-align:center; animation:popIn 0.3s ease; }
+@keyframes popIn { 0%{transform:scale(0.8);opacity:0;}100%{transform:scale(1);opacity:1;} }
+
+.modal h3 { color:#2d5bff; margin-bottom:10px; font-size:20px; }
+.modal p { font-size:14px; margin:5px 0; color:#555; }
+
+/* ===== INPUT & BUTTONS ===== */
+input { width:100%; padding:12px; margin:10px 0; border-radius:10px; border:1px solid #ccc; font-size:14px; }
+button { padding:12px; width:100%; background:#2d5bff; color:white; border:none; border-radius:12px; font-size:16px; cursor:pointer; transition: background 0.2s ease; }
+button:hover { background:#1a4af0; }
+button.close { background:#ccc; color:black; margin-top:8px; }
+
+/* ===== ERROR MESSAGE ===== */
+#error { color:red; font-size:13px; margin-top:5px; }
+
+/* ===== BACK BUTTON ===== */
+a { display:inline-block; margin-top:20px; padding:10px 15px; background:#2d5bff; color:white; border-radius:12px; text-decoration:none; font-size:14px; transition: background 0.2s ease; }
+a:hover { background:#1a4af0; }
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:480px){ .jobs{grid-template-columns:1fr;} h1{font-size:24px;} .modal-content{padding:20px;} }
+</style>
+</head>
+<body>
+
+<h1>🌍 Remote Jobs Hub</h1>
+<p>Click a job → Pay → Receive password → Unlock full details</p>
+
+<div class="jobs" id="jobs"></div>
+
+<!-- PASSWORD MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h3 id="jobTitle"></h3>
+    <p id="jobPay"></p>
+    <p><strong>Send payment via M-Pesa</strong></p>
+    <p>📱 <strong>0762048809</strong></p>
+    <input type="password" id="password" placeholder="Enter password">
+    <button onclick="checkPassword()">Unlock Job</button>
+    <p id="error"></p>
+    <button class="close" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+// Passwords
+const LOW_PASSWORD = "LOW150";
+const HIGH_PASSWORD = "HIGH250";
+
+let selectedTier = "";
+let selectedJobId = 0;
+
+// 100 Jobs (Easy → Hard)
+const jobs = [
+  // LOW PAYING (1-50)
+  {id:1,title:"Online Typing Jobs",tier:"low",pay:"KSh 150"},
+  {id:2,title:"Basic Data Entry",tier:"low",pay:"KSh 150"},
+  {id:3,title:"PDF to Word Conversion",tier:"low",pay:"KSh 150"},
+  {id:4,title:"Form Filling Tasks",tier:"low",pay:"KSh 150"},
+  {id:5,title:"Captcha Solving",tier:"low",pay:"KSh 150"},
+  {id:6,title:"Copy-Paste Jobs",tier:"low",pay:"KSh 150"},
+  {id:7,title:"Online Surveys",tier:"low",pay:"KSh 150"},
+  {id:8,title:"Commenting on Blogs",tier:"low",pay:"KSh 150"},
+  {id:9,title:"Reviewing Short Articles",tier:"low",pay:"KSh 150"},
+  {id:10,title:"Microtasks Labeling",tier:"low",pay:"KSh 150"},
+  {id:11,title:"Social Media Likes & Shares",tier:"low",pay:"KSh 150"},
+  {id:12,title:"Forum Posting Jobs",tier:"low",pay:"KSh 150"},
+  {id:13,title:"Telegram Channel Engagement",tier:"low",pay:"KSh 150"},
+  {id:14,title:"WhatsApp Group Moderator",tier:"low",pay:"KSh 150"},
+  {id:15,title:"YouTube Commenting Tasks",tier:"low",pay:"KSh 150"},
+  {id:16,title:"Instagram Engagement",tier:"low",pay:"KSh 150"},
+  {id:17,title:"Poll Voting & Surveys",tier:"low",pay:"KSh 150"},
+  {id:18,title:"Image Tagging / Captioning",tier:"low",pay:"KSh 150"},
+  {id:19,title:"Simple Transcription (<5 min)",tier:"low",pay:"KSh 150"},
+  {id:20,title:"Audio Listening & Categorizing",tier:"low",pay:"KSh 150"},
+  {id:21,title:"Short Video Review & Feedback",tier:"low",pay:"KSh 150"},
+  {id:22,title:"Online Research – Finding Links",tier:"low",pay:"KSh 150"},
+  {id:23,title:"Copying Contacts / Emails",tier:"low",pay:"KSh 150"},
+  {id:24,title:"Screenshot Verification Tasks",tier:"low",pay:"KSh 150"},
+  {id:25,title:"CAPTCHA Verification",tier:"low",pay:"KSh 150"},
+  {id:26,title:"Quick Data Verification",tier:"low",pay:"KSh 150"},
+  {id:27,title:"Basic Spreadsheet Updates",tier:"low",pay:"KSh 150"},
+  {id:28,title:"Online Quiz Participation",tier:"low",pay:"KSh 150"},
+  {id:29,title:"Product Rating Jobs",tier:"low",pay:"KSh 150"},
+  {id:30,title:"Comment Moderation",tier:"low",pay:"KSh 150"},
+  {id:31,title:"SMS Response Tasks",tier:"low",pay:"KSh 150"},
+  {id:32,title:"Online Test Grading (simple)",tier:"low",pay:"KSh 150"},
+  {id:33,title:"Product Description Checking",tier:"low",pay:"KSh 150"},
+  {id:34,title:"Photo Upload Verification",tier:"low",pay:"KSh 150"},
+  {id:35,title:"Website Testing (UI clicks)",tier:"low",pay:"KSh 150"},
+  {id:36,title:"Survey Follow-Up Calls (scripted)",tier:"low",pay:"KSh 150"},
+  {id:37,title:"Short Translation Tasks (<200 words)",tier:"low",pay:"KSh 150"},
+  {id:38,title:"Blog Post Feedback",tier:"low",pay:"KSh 150"},
+  {id:39,title:"Capturing Leads (manual)",tier:"low",pay:"KSh 150"},
+  {id:40,title:"Online Voting Tasks",tier:"low",pay:"KSh 150"},
+  {id:41,title:"Review & Categorize Comments",tier:"low",pay:"KSh 150"},
+  {id:42,title:"Pinterest Pin Engagement",tier:"low",pay:"KSh 150"},
+  {id:43,title:"Twitter Retweet / Like Tasks",tier:"low",pay:"KSh 150"},
+  {id:44,title:"LinkedIn Engagement Tasks",tier:"low",pay:"KSh 150"},
+  {id:45,title:"Simple Data Collection (names/addresses)",tier:"low",pay:"KSh 150"},
+  {id:46,title:"Verification of Online Directories",tier:"low",pay:"KSh 150"},
+  {id:47,title:"Short Captions Creation",tier:"low",pay:"KSh 150"},
+  {id:48,title:"Simple Chat Support (scripted)",tier:"low",pay:"KSh 150"},
+  {id:49,title:"Simple Online Moderation",tier:"low",pay:"KSh 150"},
+  {id:50,title:"Quick Survey Analysis",tier:"low",pay:"KSh 150"},
+
+  // HIGH PAYING (51-100)
+  {id:51,title:"Remote Web Development",tier:"high",pay:"KSh 250"},
+  {id:52,title:"Mobile App Development",tier:"high",pay:"KSh 250"},
+  {id:53,title:"Python Backend Developer",tier:"high",pay:"KSh 250"},
+  {id:54,title:"AI Data Training",tier:"high",pay:"KSh 250"},
+  {id:55,title:"Virtual Assistant (International)",tier:"high",pay:"KSh 250"},
+  {id:56,title:"Digital Marketing Specialist",tier:"high",pay:"KSh 250"},
+  {id:57,title:"SEO Specialist",tier:"high",pay:"KSh 250"},
+  {id:58,title:"Graphic Designer",tier:"high",pay:"KSh 250"},
+  {id:59,title:"UI/UX Designer",tier:"high",pay:"KSh 250"},
+  {id:60,title:"Video Editor",tier:"high",pay:"KSh 250"},
+  {id:61,title:"Content Writer",tier:"high",pay:"KSh 250"},
+  {id:62,title:"Copywriter",tier:"high",pay:"KSh 250"},
+  {id:63,title:"Email Marketing Specialist",tier:"high",pay:"KSh 250"},
+  {id:64,title:"Sales Representative (Remote)",tier:"high",pay:"KSh 250"},
+  {id:65,title:"Customer Success Manager",tier:"high",pay:"KSh 250"},
+  {id:66,title:"Data Analyst",tier:"high",pay:"KSh 250"},
+  {id:67,title:"Cybersecurity Analyst",tier:"high",pay:"KSh 250"},
+  {id:68,title:"Cloud Engineer",tier:"high",pay:"KSh 250"},
+  {id:69,title:"DevOps Engineer",tier:"high",pay:"KSh 250"},
+  {id:70,title:"Blockchain Researcher",tier:"high",pay:"KSh 250"},
+  {id:71,title:"Technical Writer",tier:"high",pay:"KSh 250"},
+  {id:72,title:"Product Manager",tier:"high",pay:"KSh 250"},
+  {id:73,title:"QA Engineer",tier:"high",pay:"KSh 250"},
+  {id:74,title:"IT Support Engineer",tier:"high",pay:"KSh 250"},
+  {id:75,title:"Remote Trainer / Tutor",tier:"high",pay:"KSh 250"},
+  {id:76,title:"Advanced Transcription",tier:"high",pay:"KSh 250"},
+  {id:77,title:"Language Translation (Technical)",tier:"high",pay:"KSh 250"},
+  {id:78,title:"Video Animation",tier:"high",pay:"KSh 250"},
+  {id:79,title:"E-Commerce Product Listing",tier:"high",pay:"KSh 250"},
+  {id:80,title:"Virtual Bookkeeping",tier:"high",pay:"KSh 250"},
+  {id:81,title:"Advanced Data Analysis",tier:"high",pay:"KSh 250"},
+  {id:82,title:"Social Media Manager",tier:"high",pay:"KSh 250"},
+  {id:83,title:"PPC / Ads Specialist",tier:"high",pay:"KSh 250"},
+  {id:84,title:"Project Coordinator",tier:"high",pay:"KSh 250"},
+  {id:85,title:"Software QA Tester",tier:"high",pay:"KSh 250"},
+  {id:86,title:"3D Modeling / CAD",tier:"high",pay:"KSh 250"},
+  {id:87,title:"Advanced Content Creator",tier:"high",pay:"KSh 250"},
+  {id:88,title:"App Store Optimization",tier:"high",pay:"KSh 250"},
+  {id:89,title:"Digital Campaign Manager",tier:"high",pay:"KSh 250"},
+  {id:90,title:"UX Research",tier:"high",pay:"KSh 250"},
+  {id:91,title:"Advanced Copywriting",tier:"high",pay:"KSh 250"},
+  {id:92,title:"Remote IT Consultant",tier:"high",pay:"KSh 250"},
+  {id:93,title:"Cloud DevOps Architect",tier:"high",pay:"KSh 250"},
+  {id:94,title:"AI Model Trainer",tier:"high",pay:"KSh 250"},
+  {id:95,title:"Video Scriptwriting",tier:"high",pay:"KSh 250"},
+  {id:96,title:"Technical SEO Specialist",tier:"high",pay:"KSh 250"},
+  {id:97,title:"Advanced Graphic Design",tier:"high",pay:"KSh 250"},
+  {id:98,title:"Remote Software Engineer",tier:"high",pay:"KSh 250"},
+  {id:99,title:"Data Scientist",tier:"high",pay:"KSh 250"},
+  {id:100,title:"AI / ML Specialist",tier:"high",pay:"KSh 250"}
+];
+
+// Render jobs
+const jobsDiv = document.getElementById("jobs");
+jobs.forEach(job => {
+  const div = document.createElement("div");
+  div.className = "job";
+  div.innerHTML = `${job.title}<span class="badge ${job.tier}">🔒 ${job.pay}</span>`;
+  div.onclick = () => openModal(job);
+  jobsDiv.appendChild(div);
+});
+
+// Modal logic
+function openModal(job){
+  selectedTier = job.tier;
+  selectedJobId = job.id;
+  document.getElementById("jobTitle").innerText = job.title;
+  document.getElementById("jobPay").innerText = "Amount to pay: "+job.pay;
+  document.getElementById("modal").style.display = "flex";
+}
+
+function closeModal(){
+  document.getElementById("modal").style.display="none";
+  document.getElementById("password").value="";
+  document.getElementById("error").innerText="";
+}
+
+function checkPassword(){
+  const pwd = document.getElementById("password").value;
+  if((selectedTier==="low" && pwd===LOW_PASSWORD) || (selectedTier==="high" && pwd===HIGH_PASSWORD)){
+    alert("✅ Access granted for job ID "+selectedJobId);
+    closeModal();
+  } else {
+    document.getElementById("error").innerText="❌ Incorrect password";
+  }
+}
+</script>
+
+</body>
+</html>

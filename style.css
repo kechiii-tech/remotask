@@ -1,0 +1,168 @@
+/* ===== RESET ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ===== BODY ===== */
+body {
+  background: linear-gradient(to right, #e0f7fa, #f4f6f8);
+  padding: 15px;
+  color: #333;
+}
+
+/* ===== HEADER ===== */
+h1 {
+  text-align: center;
+  color: #2d5bff;
+  font-size: 28px;
+  margin-bottom: 5px;
+}
+
+p {
+  text-align: center;
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+/* ===== JOB GRID ===== */
+.jobs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+}
+
+/* ===== JOB CARD ===== */
+.job {
+  background: white;
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.job:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.job span {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+/* ===== BADGES ===== */
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  margin-top: 5px;
+}
+
+.low { background-color: #4CAF50; }      /* Green = Easy / Low Pay */
+.high { background-color: #2196F3; }     /* Blue = Hard / High Pay */
+.medium { background-color: #FF9800; }   /* Orange = Medium (optional) */
+
+/* ===== ICONS ===== */
+.job span::before {
+  content: "💼 ";  /* briefcase icon for jobs */
+  margin-right: 3px;
+}
+
+/* ===== MODAL ===== */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 25px;
+  width: 90%;
+  max-width: 350px;
+  border-radius: 20px;
+  text-align: center;
+  animation: popIn 0.3s ease;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.modal h3 {
+  color: #2d5bff;
+  margin-bottom: 10px;
+  font-size: 20px;
+}
+
+.modal p {
+  font-size: 14px;
+  margin: 5px 0;
+  color: #555;
+}
+
+/* ===== INPUT & BUTTONS ===== */
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+button {
+  padding: 12px;
+  width: 100%;
+  background: #2d5bff;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+button:hover { background: #1a4af0; }
+button.close { background: #ccc; color: black; margin-top: 8px; }
+
+/* ===== ERROR MESSAGE ===== */
+#error { color: red; font-size: 13px; margin-top: 5px; }
+
+/* ===== BACK BUTTON ===== */
+a {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 15px;
+  background: #2d5bff;
+  color: white;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+a:hover { background: #1a4af0; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 480px) {
+  .jobs { grid-template-columns: 1fr; }
+  h1 { font-size: 24px; }
+  .modal-content { padding: 20px; }
+}

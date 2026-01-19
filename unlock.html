@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Unlock Jobs</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>🔐 Unlock Jobs</h2>
+
+  <p>
+    Send payment via M-Pesa:
+    <br><strong>KSh 150 (Low)</strong> or <strong>KSh 250 (High)</strong>
+    <br>To: <strong>0762048809</strong>
+  </p>
+
+  <p>
+    After payment, you will receive a <strong>password</strong> from us.
+  </p>
+
+  <input type="password" id="password" placeholder="Enter password" />
+  <button onclick="unlock()">Unlock</button>
+
+  <p id="error"></p>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const tier = params.get("tier");
+
+    function unlock() {
+      const pwd = document.getElementById("password").value;
+
+      // CHANGE THESE PASSWORDS WHEN NEEDED
+      const LOW_PASSWORD = "LOW150";
+      const HIGH_PASSWORD = "HIGH250";
+
+      if (tier === "low" && pwd === LOW_PASSWORD) {
+        window.location.href = "low.html";
+      } else if (tier === "high" && pwd === HIGH_PASSWORD) {
+        window.location.href = "high.html";
+      } else {
+        document.getElementById("error").innerText =
+          "❌ Incorrect password. Contact support.";
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Job Details</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>📝 Job Details</h1>
+<div id="jobDetail"></div>
+<a href="index.html">⬅ Back to Jobs</a>
+
+<script>
+const jobs = [
+  ...Array.from({ length: 50 }, (_, i) => ({
+    id: i+1,
+    title: `Low Task Job #${i+1}`,
+    description: `This is the full description for Low Task Job #${i+1}. Tasks include data entry, typing, surveys, etc.`,
+    tier: "low",
+    pay: "KSh 150"
+  })),
+  ...Array.from({ length: 50 }, (_, i) => ({
+    id: i+51,
+    title: `High Skill Job #${i+1}`,
+    description: `Full description for High Skill Job #${i+1}. Tasks include web dev, AI training, marketing, etc.`,
+    tier: "high",
+    pay: "KSh 250"
+  }))
+];
+
+// Get job id from URL
+const params = new URLSearchParams(window.location.search);
+const jobId = parseInt(params.get("job"));
+
+const job = jobs.find(j => j.id === jobId);
+const detailDiv = document.getElementById("jobDetail");
+
+if(job) {
+  detailDiv.innerHTML = `
+    <h2>${job.title}</h2>
+    <p><strong>Tier:</strong> ${job.tier}</p>
+    <p><strong>Pay:</strong> ${job.pay}</p>
+    <p>${job.description}</p>
+  `;
+} else {
+  detailDiv.innerHTML = "<p>❌ Job not found</p>";
+}
+</script>
+
+</body>
+</html>
